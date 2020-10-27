@@ -4,242 +4,220 @@ import java_cup.runtime.Symbol;
 %%
 
 %class Lexer
-%implements symbols 
+%implements sym
 %unicode
 %cup
 %line
 %column
 
 %{
-	
-	public static final int endTag = 1;
-    public static final int bodyOpen = 2;
-    public static final int bodyClose = 3;
-    public static final int frame = 4;
-    public static final int framesetOpen = 5;
-    public static final int framesetClose = 6;
-    public static final int noframesOpen = 7;
-    public static final int noframesClose = 8;
-    public static final int formOpen = 9;
-    public static final int formClose = 10;
-    public static final int input = 11;
-    public static final int selectOpen = 12;
-    public static final int selectClose = 13;
-    public static final int optionOpen = 14;
-    public static final int optionClose = 15;
-    public static final int tableOpen = 16;
-    public static final int tableClose = 17;
-    public static final int trOpen = 18;
-    public static final int trClose = 19;
-    public static final int tdOpen = 20;
-    public static final int tdClose = 21;
-    public static final int thOpen = 22;
-    public static final int thClose = 23;
-    public static final int thread = 24;
-    public static final int tbody = 25;
-    public static final int img = 26;
-    public static final int aOpen = 27;
-    public static final int aClose = 28;
-    public static final int ulOpen = 29;
-    public static final int ulClose = 30;
-    public static final int liOpen = 31;
-    public static final int liClose = 32;
-    public static final int olOpen = 33;
-    public static final int olClose = 34;
-    public static final int pOpen = 35;
-    public static final int pClose = 36;
-    public static final int iOpen = 37;
-    public static final int iClose = 38;
-    public static final int uOpen = 39;
-    public static final int uClose = 40;
-    public static final int smallOpen = 41;
-    public static final int smallClose = 42;
-    public static final int supOpen = 43;
-    public static final int supClose = 44;
-    public static final int subOpen = 45;
-    public static final int subClose = 46;
-    public static final int center = 47;
-    public static final int fontOpen = 48;
-    public static final int fontClose = 49;
-    public static final int h1Open = 50;
-    public static final int h1Close = 51;
-    public static final int h2Open = 52;
-    public static final int h2Close = 53;
-    public static final int h3Open = 54;
-    public static final int h3Close = 55;
-    public static final int h4Open = 56;
-    public static final int h4Close = 57;
-    public static final int h5Open = 58;
-    public static final int h5Close = 59;
-    public static final int h6Open = 60;
-    public static final int h6Close = 61;
-    public static final int hr = 62;
-    public static final int br = 63;
-	
-    public Lexer(ComplexSymbolFactory sf, java.io.InputStream is){
-		this(is);
-        symbolFactory = sf;
-    }
-	public Lexer(ComplexSymbolFactory sf, java.io.Reader reader){
-		this(reader);
-        symbolFactory = sf;
-    }
-    
-    private StringBuffer sb;
-    private ComplexSymbolFactory symbolFactory;
-    private int csline,cscolumn;
+    StringBuffer string = new StringBuffer();
 
-    public Symbol symbol(String name, int code){
-		return symbolFactory.newSymbol(name, code,
-						new Location(yyline+1,yycolumn+1, yychar), // -yylength()
-						new Location(yyline+1,yycolumn+yylength(), yychar+yylength())
-				);
+    private Symbol symbol(int type){
+        return new Symbol(type, yyline, yycolumn);
     }
-    public Symbol symbol(String name, int code, String lexem){
-	return symbolFactory.newSymbol(name, code, 
-						new Location(yyline+1, yycolumn +1, yychar), 
-						new Location(yyline+1,yycolumn+yylength(), yychar+yylength()), lexem);
-    }
-    
-    protected void emit_warning(String message){
-    	System.out.println("scanner warning: " + message + " at : 2 "+ 
-    			(yyline+1) + " " + (yycolumn+1) + " " + yychar);
-    }
-    
-    protected void emit_error(String message){
-    	System.out.println("scanner error: " + message + " at : 2" + 
-    			(yyline+1) + " " + (yycolumn+1) + " " + yychar);
+    private Symbol symbol(int type, Object value){
+        return new Symbol(type, yyline, yycolumn, value);
     }
 %}
+
 Comment = "<!--" [^*] ~"-->" 
    
 %%
 
     <YYINITIAL> {
 
-      /* Tags */
-      ">"                         { return symbolFactory.newSymbol("endTag", endTag); }
-      "<body"                     { return symbolFactory.newSymbol("bodyOpen", bodyOpen); }
-      "</body"			              { return symbolFactory.newSymbol("bodyClose",bodyClose); }
-      "<frame"			              { return symbolFactory.newSymbol("frame",frame); }
-      "<frameset"		              { return symbolFactory.newSymbol("framesetOpen",framesetOpen); }
-      "</frameset"		            { return symbolFactory.newSymbol("framesetClose", framesetClose); }
-      "<noframes"		              { return symbolFactory.newSymbol("noframesOpen",noframesOpen); }
-      "</noframes"		            { return symbolFactory.newSymbol("noframesClose",noframesClose); }
-      "<form"			                { return symbolFactory.newSymbol("formOpen", formOpen); }
-      "</form"			              { return symbolFactory.newSymbol("formClose", formClose); }
-      "<input"			              { return symbolFactory.newSymbol("input", input); }
-      "<select"			              { return symbolFactory.newSymbol("selectOpen", selectOpen); }
-      "</select"		              { return symbolFactory.newSymbol("selectClose", selectClose); }
-      "<option"			              { return symbolFactory.newSymbol("optionOpen",optionOpen); }
-      "</option"		              { return symbolFactory.newSymbol("optionClose", optionClose); }
-      "<table"		  	            { return symbolFactory.newSymbol("tableOpen", tableOpen); }
-      "</table"			              { return symbolFactory.newSymbol("tableClose", tableClose); }
-      "<tr"			                  { return symbolFactory.newSymbol("trOpen", trOpen); }
-      "</tr"			                { return symbolFactory.newSymbol("trClose",trClose); }
-      "<td"			                  { return symbolFactory.newSymbol("tdOpen", tdOpen); }
-      "</td"			                { return symbolFactory.newSymbol("tdClose", tdClose); }
-      "<th"			                  { return symbolFactory.newSymbol("thOpen", thOpen); }
-      "</th"			                { return symbolFactory.newSymbol("thClose", thClose); }
-      "<thead"			              { return symbolFactory.newSymbol("thread", thread); }
-      "<tbody"			              { return symbolFactory.newSymbol("tbody",tbody); }
-      "<img"			                { return symbolFactory.newSymbol("img", img); }
-      "<a"			                  { return symbolFactory.newSymbol("aOpen", aOpen); }
-      "</a"			                  { return symbolFactory.newSymbol("aClose", aClose); }
-      "<ul"			                  { return symbolFactory.newSymbol("ulOpen", ulOpen); }
-      "</ul"			                { return symbolFactory.newSymbol("ulClose", ulClose); }
-      "<li"			                  { return symbolFactory.newSymbol("liOpen",liOpen); }
-      "</li"			                { return symbolFactory.newSymbol("liClose", liClose); }
-      "<ol"			                  { return symbolFactory.newSymbol("olOpen",olOpen); }
-      "</ol"			                { return symbolFactory.newSymbol("olClose",olClose); }
-      "<p"			                  { return symbolFactory.newSymbol("pOpen", pOpen); }
-      "</p>"			                { return symbolFactory.newSymbol("pClose",pClose); }
-      "<i"			                  { return symbolFactory.newSymbol("iOpen", iOpen); }
-      "</i"			                  { return symbolFactory.newSymbol("iClose", iClose); }
-      "<u"			                  { return symbolFactory.newSymbol("uOpen", uOpen); }
-      "</u"			                  { return symbolFactory.newSymbol("uClose",uClose); }
-      "<small"			              { return symbolFactory.newSymbol("smallOpen", smallOpen); }
-      "</small"			              { return symbolFactory.newSymbol("smallClose",smallClose); }
-      "<sup"			                { return symbolFactory.newSymbol("supOpen", supOpen); }
-      "</sup"			                { return symbolFactory.newSymbol("supClose", supClose); }
-      "<sub"			                { return symbolFactory.newSymbol("subOpen", subOpen); }
-      "</sub"			                { return symbolFactory.newSymbol("subClose",subClose); }
-      "center"			              { return symbolFactory.newSymbol("center",center); }
-      "<font"			                { return symbolFactory.newSymbol("fontOpen", fontOpen); }
-      "</font"			              { return symbolFactory.newSymbol("fontClose", fontClose); }
-      "<h1"			                  { return symbolFactory.newSymbol("h1Open", h1Open); }
-      "</h1"			                { return symbolFactory.newSymbol("h1Close", h1Close); }
-      "<h2"			                  { return symbolFactory.newSymbol("h2Open", h2Open); }
-      "</h2"			                { return symbolFactory.newSymbol("h2Close", h2Close); }
-      "<h3"			                  { return symbolFactory.newSymbol("h3Open", h3Open); }
-      "</h3"			                { return symbolFactory.newSymbol("h3Close", h3Close); }
-      "<h4"			                  { return symbolFactory.newSymbol("h4Open",h4Open); }
-      "</h4"			                { return symbolFactory.newSymbol("h4Close", h4Close); }
-      "<h5"			                  { return symbolFactory.newSymbol("h5Open",h5Open); }
-      "</h5"			                { return symbolFactory.newSymbol("h5Close",h5Close); }
-      "<h6"			                  { return symbolFactory.newSymbol("h6Open", h6Open); }
-      "</h6"			                { return symbolFactory.newSymbol("h6Close", h6Close); }
-      "<hr"			                  { return symbolFactory.newSymbol("hr", hr); }
-      "<br"			                  { return symbolFactory.newSymbol("br", br); }
+      /* HTML Tags */
+      ">"                         { return symbol(sym.endTag); }
+      "<body"                     { return symbol(sym.bodyOpen); }
+      "</body"			              { return symbol(sym.bodyClose); }
+      "<frame"			              { return symbol(sym.frameOpen); }
+      "<frameset"		              { return symbol(sym.framesetOpen); }
+      "</frameset"		            { return symbol(sym.framesetClose); }
+      "<noframes"		              { return symbol(sym.noframesOpen); }
+      "</noframes"		            { return symbol(sym.noframesClose); }
+      "<form"			                { return symbol(sym.formOpen); }
+      "</form"			              { return symbol(sym.formClose); }
+      "<input"			              { return symbol(sym.input); }
+      "<select"			              { return symbol(sym.selectOpen); }
+      "</select"		              { return symbol(sym.selectClose); }
+      "<option"			              { return symbol(sym.optionOpen); }
+      "</option"		              { return symbol(sym.optionClose); }
+      "<table"		  	            { return symbol(sym.tableOpen); }
+      "</table"			              { return symbol(sym.tableClose); }
+      "<tr"			                  { return symbol(sym.trOpen); }
+      "</tr"			                { return symbol(sym.trClose); }
+      "<td"			                  { return symbol(sym.tdOpen); }
+      "</td"			                { return symbol(sym.tdClose); }
+      "<th"			                  { return symbol(sym.thOpen); }
+      "</th"			                { return symbol(sym.thClose); }
+      "<thead"			              { return symbol(sym.thread); }
+      "<tbody"			              { return symbol(sym.tbody); }
+      "<img"			                { return symbol(sym.img); }
+      "<a"			                  { return symbol(sym.aOpen); }
+      "</a"			                  { return symbol(sym.aClose); }
+      "<ul"			                  { return symbol(sym.ulOpen); }
+      "</ul"			                { return symbol(sym.ulClose); }
+      "<li"			                  { return symbol(sym.liOpen); }
+      "</li"			                { return symbol(sym.liClose); }
+      "<ol"			                  { return symbol(sym.olOpen); }
+      "</ol"			                { return symbol(sym.olClose); }
+      "<p"			                  { return symbol(sym.pOpen); }
+      "</p>"			                { return symbol(sym.pClose); }
+      "<i"			                  { return symbol(sym.iOpen); }
+      "</i"			                  { return symbol(sym.iClose); }
+      "<u"			                  { return symbol(sym.uOpen); }
+      "</u"			                  { return symbol(sym.uClose); }
+      "<b"			                  { return symbol(sym.bOpen); }
+      "</b"			                  { return symbol(sym.bClose); }
+      "<small"			              { return symbol(sym.smallOpen); }
+      "</small"			              { return symbol(sym.smallClose); }
+      "<sup"			                { return symbol(sym.supOpen); }
+      "</sup"			                { return symbol(sym.supClose); }
+      "<sub"			                { return symbol(sym.subOpen); }
+      "</sub"			                { return symbol(sym.subClose); }
+      "<center"			              { return symbol(sym.centerOpen); }
+      "</center"			              { return symbol(sym.centerClose); }
+      "<font"			                { return symbol(sym.fontOpen); }
+      "</font"			              { return symbol(sym.fontClose); }
+      "<h1"			                  { return symbol(sym.h1Open); }
+      "</h1"			                { return symbol(sym.h1Close); }
+      "<h2"			                  { return symbol(sym.h2Open); }
+      "</h2"			                { return symbol(sym.h2Close); }
+      "<h3"			                  { return symbol(sym.h3Open); }
+      "</h3"			                { return symbol(sym.h3Close); }
+      "<h4"			                  { return symbol(sym.h4Open); }
+      "</h4"			                { return symbol(sym.h4Close); }
+      "<h5"			                  { return symbol(sym.h5Open); }
+      "</h5"			                { return symbol(sym.h5Close); }
+      "<h6"			                  { return symbol(sym.h6Open); }
+      "</h6"			                { return symbol(sym.h6Close); }
+      "<hr"			                  { return symbol(sym.hr); }
+      "<br"			                  { return symbol(sym.br); }
 
-      /* Global Attributes */
+      /* HTML Core Attributes */
       
-      "class"			                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "dir"			                  { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "id"			                  { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "lang"			                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "onclick"			              { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "ondblclick"                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "onkeydown"                 { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "onkeypress"                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "onkeyup"                   { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "onmousedown"               { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "onmousemove"               { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "onmouseout"                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "onmouseover"               { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "onmouseup"                 { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "contenteditable"			      { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "contextmenu"			          { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "data"			                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "draggable"			            { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "dropzone"	                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "hidden"	                  { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "spellcheck"			          { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "style"			                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "tabindex"			            { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "title"			                { return symbolFactory.newSymbol("accesskey", accesskey); }
+      "class="			                { return symbol(sym.cls); }
+      "dir="			                  { return symbol(sym.dir); }
+      "id="			                  { return symbol(sym.id); }
+      "lang="			                { return symbol(sym.lang); }
+      "onclick="			              { return symbol(sym.onclick); }
+      "ondblclick="                { return symbol(sym.ondblclick); }
+      "onkeydown="                 { return symbol(sym.onkeydown); }
+      "onkeypress="                { return symbol(sym.onkeypress); }
+      "onkeyup="                   { return symbol(sym.onkeyup); }
+      "onmousedown="               { return symbol(sym.onmousedown); }
+      "onmousemove="               { return symbol(sym.onmousemove); }
+      "onmouseout="                { return symbol(sym.onmouseout); }
+      "onmouseover="               { return symbol(sym.onmouseover); }
+      "onmouseup="                 { return symbol(sym.onmouseup); }
+      "style="			                { return symbol(sym.style); }
+      "title="			                { return symbol(sym.title); }
 
-      /* Attributes */
+     
+      /* HTML Tag Attributes */
 
-      "accesskey", accesskey                 { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "charset"                   { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "charset"                   { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "href"                      { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "hreflang"                  { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "name"                      { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "rel"                       { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "rev"                       { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "shape"                     { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "tabindex"                  { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "target"                    { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "type"                      { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "align"                     { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "alt"                       { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "archive"                   { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "code"                      { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "codebase"                  { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "height"                    { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "hspace"                    { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "mayscript"                 { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "name"                      { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "vspace"                    { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "width"                     { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "loop"                      { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "background"                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "bgcolor"                   { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "bgproperties"              { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "leftmargin"                { return symbolFactory.newSymbol("accesskey", accesskey); }
-      "clear"                     { return symbolFactory.newSymbol("accesskey", accesskey); }
+
+      "alink="                 { return symbol(sym.alink); }
+      "background="                 { return symbol(sym.background); }
+      "bgcolor="                 { return symbol(sym.bgcolor); }
+      "bgproperties="                 { return symbol(sym.bgproperties); }
+      "leftmargin="                 { return symbol(sym.leftmargin); }
+      "link="                 { return symbol(sym.link); }
+      "onblur="                 { return symbol(sym.onblur); }
+      "onfocus="                 { return symbol(sym.onfocus); }
+      "onload="                 { return symbol(sym.onload); }
+      "onunload="                 { return symbol(sym.onunload); }
+      "text="                 { return symbol(sym.text); }
+      "topmargin="                 { return symbol(sym.topmargin); }
+      "vlink="                 { return symbol(sym.vlink); }
+
+      "bordercolor="                 { return symbol(sym.bordercolor); }
+      "longdesc="                 { return symbol(sym.longdesc); }
+      "marginheight="                 { return symbol(sym.marginheight); }
+      "marginwidth="                 { return symbol(sym.marginwidth); }
+      "name="                 { return symbol(sym.name); }
+      "noresize"                 { return symbol(sym.noresize); }
+      "scrolling="                 { return symbol(sym.scrolling); }
+      "src="                 { return symbol(sym.src); }
+
+      "border="                 { return symbol(sym.border); }
+      "framespacing="                 { return symbol(sym.framespacing); }
+      "rows="                 { return symbol(sym.rows); }
+
+      "accept-charlist="          { return symbol(sym.acceptcharlist); }
+      "action="                 { return symbol(sym.action); }
+      "enctype="                 { return symbol(sym.enctype); }
+      "method="                 { return symbol(sym.method); }
+      "onreset="                 { return symbol(sym.onreset); }
+      "onsubmit="                 { return symbol(sym.onsubmit); }
+      "target="                 { return symbol(sym.target); }
+
+      "disabled"                 { return symbol(sym.disabled); }
+      "multiple"                 { return symbol(sym.multiple); }
+      "onchange="                 { return symbol(sym.onchange); }
+      "size="                 { return symbol(sym.size); }
+      "tabindex="                 { return symbol(sym.tabindex); }
+
+      "label="                 { return symbol(sym.label); }
+      "selected"                 { return symbol(sym.selected); }
+      "value="                 { return symbol(sym.value); }
+
+      "align="                 { return symbol(sym.align); }
+      "bordercolordark="                 { return symbol(sym.bordercolordark); }
+      "bordercolorlight="                 { return symbol(sym.bordercolorlight); }
+      "cellpadding="                 { return symbol(sym.cellpadding); }
+      "cellspacing="                 { return symbol(sym.cellspacing); }
+      "cols="                 { return symbol(sym.cols); }
+      "frame="                 { return symbol(sym.frame); }
+      "height="                 { return symbol(sym.height); }
+      "hspace="                 { return symbol(sym.hspace); }
+      "nowrap"                 { return symbol(sym.nowrap); }
+      "rules="                 { return symbol(sym.rules); }
+      "summary="                 { return symbol(sym.summary); }
+      "valign="                 { return symbol(sym.valign); }
+      "vspace="                 { return symbol(sym.vspace); }
+      "width="                 { return symbol(sym.width); }
+
+      "char="                 { return symbol(sym.chr); }
+      "abbr="                 { return symbol(sym.abbr); }
+      "axis="                 { return symbol(sym.axis); }
+      "charoff="                 { return symbol(sym.charoff); }
+      "colspan="                 { return symbol(sym.colspan); }
+      "headers="                 { return symbol(sym.headers); }
+      "rowspan="                 { return symbol(sym.rowspan); }
+      "scope="                 { return symbol(sym.scope); }
+
+      "alt="                 { return symbol(sym.alt); }
+      "controls"                 { return symbol(sym.controls); }
+      "dynsrc="                 { return symbol(sym.dynsrc); }
+      "ismap"                 { return symbol(sym.ismap); }
+      "loop="                 { return symbol(sym.loop); }
+      "lowsrc="                 { return symbol(sym.lowsrc); }
+      "onabort="                 { return symbol(sym.onabort); }
+      "onerror="                 { return symbol(sym.onerror); }
+      "start="                 { return symbol(sym.start); }
+      "usemap="                 { return symbol(sym.usemap); }
+
+      "accesskey="                 { return symbol(sym.accesskey); }
+      "charset="                   { return symbol(sym.charset); }
+      "coords="                 { return symbol(sym.coords); }
+      "href="                      { return symbol(sym.href); }
+      "hreflang="                  { return symbol(sym.hreflang); }
+      "rel="                       { return symbol(sym.rel); }
+      "rev="                       { return symbol(sym.rev); }
+      "shape="                     { return symbol(sym.shape); }
+      "tabindex="                  { return symbol(sym.tabindex); }
+      "target="                    { return symbol(sym.target); }
+      "type="                 { return symbol(sym.type); }
+
+      "compact"                 { return symbol(sym.compact); }
+      "face="                 { return symbol(sym.face); }
+      "color="                 { return symbol(sym.color); }
+      "noshade"                 { return symbol(sym.noshade); }
+      "clear="                 { return symbol(sym.clear); }
+	" "                     { return symbol(sym.space); }
+
     }
     
     
